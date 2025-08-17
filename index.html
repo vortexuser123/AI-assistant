@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>AI Assistant</title>
+<style>
+body{background:#0b0d12;color:#eaf2ff;font-family:system-ui;display:grid;place-items:center;height:100vh}
+.face{width:220px;height:220px;border-radius:50%;background:#111826;position:relative;box-shadow:0 0 40px #6ef3ff22 inset}
+.eye{width:38px;height:38px;background:#cde7ff;border-radius:50%;position:absolute;top:70px}
+.eye.left{left:60px}.eye.right{right:60px}
+.mouth{width:120px;height:70px;border-radius:0 0 120px 120px / 0 0 80px 80px;background:#cde7ff22;position:absolute;bottom:50px;left:50%;transform:translateX(-50%)}
+.face.happy .mouth{height:40px; bottom:70px; border-radius:0 0 120px 120px / 0 0 120px 120px;}
+.face.sad .mouth{height:40px; bottom:30px; border-radius:120px 120px 0 0 / 120px 120px 0 0; transform:translateX(-50%) rotate(180deg)}
+.face.talk .mouth{animation:talk 0.4s infinite alternate}
+@keyframes talk{from{height:20px}to{height:60px}}
+.container{display:flex;flex-direction:column;gap:16px;align-items:center}
+input{padding:10px 14px;border-radius:10px;border:1px solid #1a2030;background:#0f1420;color:#eaf2ff;width:360px}
+button{padding:10px 16px;border-radius:10px;border:0;background:#6ef3ff;color:#06111a;font-weight:700;cursor:pointer}
+.reply{opacity:.9}
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="face" class="face neutral">
+    <div class="eye left"></div><div class="eye right"></div><div class="mouth"></div>
+  </div>
+  <div>
+    <input id="q" placeholder="Say something..." />
+    <button onclick="send()">Send</button>
+  </div>
+  <div class="reply" id="reply"></div>
+</div>
+<script>
+  const ws = new WebSocket(`ws://${location.host}`);
+  ws.onmessage = (e)=>{
+    const { reply, mood } = JSON.parse(e.data);
+    replyDiv.textContent = reply;
+    face.className = `face ${mood} talk`;
+    setTimeout(()=> face.className = `face ${mood}`, 1200);
+  };
+  const q = document.getElementById('q'), replyDiv = document.getElementById('reply'), face = document.getElementById('face');
+  function send(){ if(!q.value.trim()) return; ws.send(q.value); q.value=''; }
+</script>
+</body>
+</html>
